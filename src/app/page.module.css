@@ -1,0 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Chivo:wght@500&display=swap');
+.main {
+  padding: 1rem;
+  min-height: 100vh;
+  background-color: rgb(231, 244, 255);
+  font-family: 'Chivo', sans-serif;
+}
