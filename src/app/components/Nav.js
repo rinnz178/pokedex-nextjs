@@ -1,4 +1,6 @@
-import React from "react";
+'use client'
+
+import React, { useState } from 'react';
 import {
   Image,
   Grid,
@@ -12,8 +14,9 @@ import {
 } from "@chakra-ui/react";
 
 export const Nav = () => {
+
   return (
-    <Box>
+    <Box >
       <Box
         display="flex"
         alignItems="center"
@@ -34,9 +37,9 @@ export const Nav = () => {
         </Text>
       </Box>
 
-      <Grid templateColumns="repeat(12, 1fr)" width="1080px" mx="auto" gap={5}>
-        <Box gridColumn="span 9">
-          <InputGroup>
+      <Grid  templateColumns="repeat(12, 1fr)" width="1080px" mx="auto" gap={5}>
+        <Box gridColumn="span 9" >
+          <InputGroup >
             <Input
               placeholder="Search your Pokemon!"
               height="60px"
