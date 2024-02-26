@@ -104,11 +104,10 @@ export const Content = () => {
       try {
         const response = await fetch('https://pokeapi.co/api/v2/type/');
         const data = await response.json();
-        const types = data.results
-          .filter(type => ['grass', 'fire', 'ground', 'water', 'flying', 'poison', 'normal', 'bug'].includes(type.name))
-          .map(type => type.name.charAt(0).toUpperCase() + type.name.slice(1)); // Capitalize the first letter
+        const allowedTypes = ['grass', 'fire', 'ground', 'water', 'flying', 'poison', 'normal', 'bug'];
+        const types = data.results.filter(type => allowedTypes.includes(type.name)).map(type => type.name);
         setPokemonTypes(types);
-        console.log(types); // Log the filtered and capitalized types fetched from the API
+        console.log(types); // Log the types fetched from the API
       } catch (error) {
         console.error('Error fetching Pokemon types:', error);
       }
@@ -117,8 +116,13 @@ export const Content = () => {
   }, []);
   
   
+  
   useEffect(() => {
     let filteredPokemon = pokemonData;
+  
+    if (!filteredPokemon) {
+      return; // Return early if filteredPokemon is null
+    }
   
     if (searchQuery) {
       filteredPokemon = filteredPokemon.filter(pokemon =>
@@ -130,11 +134,14 @@ export const Content = () => {
       filteredPokemon = filteredPokemon.filter(pokemon =>
         pokemon.details.types.some(type => type.type.name === selectedType)
       );
-      console.log(filteredPokemon);
     }
   
-    setVisibleItemPokemon(filteredPokemon);
-  }, [searchQuery, selectedType, pokemonData]);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const visiblePokemon = filteredPokemon.slice(startIndex, endIndex);
+  
+    setVisibleItemPokemon(visiblePokemon);
+  }, [searchQuery, selectedType, pokemonData, currentPage, itemsPerPage]);
   
   const handleSearchQueryChange = event => {
     setSearchQuery(event.target.value);
