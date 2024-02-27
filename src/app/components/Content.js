@@ -16,6 +16,7 @@ import {
   InputLeftAddon,
   Select,
   InputLeftElement,
+  InputRightElement,
   Wrap,
   WrapItem,
   SlideFade
@@ -41,8 +42,13 @@ export const Content = () => {
   const [evolutionChain, setEvolutionChain] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState(null);
+  const [selectedAbility, setSelectedAbility] = useState(null);
+
   const [pokemonTypes, setPokemonTypes] = useState([]);
+  const [pokemonAbilities, setPokemonAbilities] = useState([]);
+
   const [visibleItemPokemon, setVisibleItemPokemon] = useState([]);
+  const [sortingOrder, setSortingOrder] = useState('ascending');
 
  const itemsPerPage = 6
 
@@ -100,20 +106,36 @@ export const Content = () => {
   }
 
   useEffect(() => {
-    const fetchPokemonTypes = async () => {
+    const fetchPokemonTypesAndAbilities = async () => {
       try {
-        const response = await fetch('https://pokeapi.co/api/v2/type/');
-        const data = await response.json();
+        // Fetching types
+        const typeResponse = await fetch('https://pokeapi.co/api/v2/type/');
+        const typeData = await typeResponse.json();
         const allowedTypes = ['grass', 'fire', 'ground', 'water', 'flying', 'poison', 'normal', 'bug'];
-        const types = data.results.filter(type => allowedTypes.includes(type.name)).map(type => type.name);
+        const types = typeData.results.filter(type => allowedTypes.includes(type.name)).map(type => type.name);
+        
+        // Fetching abilities
+      // Fetching abilities
+      const abilityResponse = await fetch('https://pokeapi.co/api/v2/ability/?limit=100');
+      const abilityData = await abilityResponse.json();
+      const desiredAbilities = 
+      ['overgrow', 'chlorophyll','solar-power','blaze','torret','rain-dish','compound-eyes','tinted-lens','shield-dust','swarm','sniper'];
+      const abilities = abilityData.results
+        .filter(ability => desiredAbilities.includes(ability.name))
+        .map(ability => ability.name);
+      
         setPokemonTypes(types);
+        setPokemonAbilities(abilities);
+        
         console.log(types); // Log the types fetched from the API
+        console.log(abilities); // Log the abilities fetched from the API
       } catch (error) {
-        console.error('Error fetching Pokemon types:', error);
+        console.error('Error fetching Pokemon types and abilities:', error);
       }
     };
-    fetchPokemonTypes();
+    fetchPokemonTypesAndAbilities();
   }, []);
+  
   
   
   
@@ -135,13 +157,20 @@ export const Content = () => {
         pokemon.details.types.some(type => type.type.name === selectedType)
       );
     }
+
+    if (selectedAbility) {
+      filteredPokemon = filteredPokemon.filter(pokemon =>
+        pokemon.details.abilities.some(ability => ability.ability.name === selectedAbility)
+      );
+    }
+    
   
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const visiblePokemon = filteredPokemon.slice(startIndex, endIndex);
   
     setVisibleItemPokemon(visiblePokemon);
-  }, [searchQuery, selectedType, pokemonData, currentPage, itemsPerPage]);
+  }, [searchQuery, selectedType,selectedAbility, pokemonData, currentPage, itemsPerPage]);
   
   const handleSearchQueryChange = event => {
     setSearchQuery(event.target.value);
@@ -152,9 +181,20 @@ export const Content = () => {
     console.log(type); // Log the selected type
   };
 
+  const handleAbilitySelect = (ability) => {
+    setSelectedAbility(ability);
+    console.log(ability); 
+  };
+  
+
   const handleAscendingClick = () => {
     setShowDescending(preValue => !preValue)
   }
+
+  const handleDescendingClick = () => {
+    setSortingOrder(sortingOrder === 'ascending' ? 'descending' : 'ascending');
+  };
+  
 
   const handleRefreshClick = () => {
     window.location.reload()
@@ -221,35 +261,141 @@ export const Content = () => {
       currentPage * itemsPerPage
     )
 
+    const handleInputChange = event => {
+      setSearchQuery(event.target.value);
+      console.log(setSearchQuery(event.target.value))
+    };
+    
+
   return (
+    <>
+    <Box >
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="8vh"
+      >
+        <Image src="/logo.png" boxSize="60px" alt="Dan Abramov" />
+      </Box>
+      <Box
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        height="9vh"
+        marginBottom="10px"
+      >
+        <Text fontSize="30px" color="#f25554" fontWeight="bold">
+          PokeDex
+        </Text>
+      </Box>
+    
+      <Grid  templateColumns="repeat(12, 1fr)" width="1080px" mx="auto" gap={5}>
+        <Box gridColumn="span 9" >
+          <InputGroup >
+            <Input
+              placeholder="Search your Pokemon!"
+              height="60px"
+              bg="white"
+              border="none"
+              borderRadius="15px"
+              boxShadow="0 4px 8px rgba(0, 0, 0, 0.1)"
+              _placeholder={{
+                color: "gray",
+                fontSize: "13px",
+              }}
+              value={searchQuery}
+              onChange={handleInputChange}
+            />
+            {searchQuery && (
+              <InputRightElement cursor="pointer" onClick={() => setSearchQuery('')}>
+                <Image
+                  src="/search.png"
+                  boxSize="35px"
+                  marginTop="20px"
+                  marginRight="20px"
+                />
+              </InputRightElement>
+            )}
+            {/* <InputRightElement>
+              <Image
+                src="/search.png"
+                boxSize="35px"
+                marginTop="20px"
+                marginRight="20px"
+              />
+            </InputRightElement> */}
+          </InputGroup>
+        </Box>
+
+        <Box gridColumn="span 3"></Box>
+      </Grid>
+    </Box>
     <Grid templateColumns='repeat(12, 1fr)' width='1080px' mx='auto' gap={5}>
       <Box gridColumn='span 9' marginTop='30px'>
         <Box display='flex' flexDirection='row' justifyContent='space-between'>
           <Box marginTop='10px'>
-            <Box
-              padding='0'
-              backgroundColor='transparent'
-              _active={{
-                backgroundColor: 'transparent'
-              }}
-              display='flex'
-              flexDirection='row'
-              cursor='pointer'
-              onClick={handleAscendingClick}
-              marginBottom='10px' // Adjust the margin as needed
-            >
-              <Text fontSize='13px'>Ascending </Text>
-              {showDescending ? (
-                <HiChevronUp fontSize='23px' />
-              ) : (
-                <HiChevronDown fontSize='23px' />
-              )}
-            </Box>
-            {showDescending && (
-              <Box marginTop='2px' position='absolute'>
-                <Text fontSize='13px'>Descending</Text>
+            {/* <Box
+                padding='0'
+                backgroundColor='transparent'
+                _active={{
+                  backgroundColor: 'transparent'
+                }}
+                display='flex'
+                flexDirection='row'
+                cursor='pointer'
+                onClick={() => {
+                  handleAscendingClick();
+                  setShowDescending(!showDescending); // Toggle the visibility of the descending option
+                }}
+                marginBottom='10px' // Adjust the margin as needed
+              >
+                <Text fontSize='13px'> {sortingOrder === 'ascending' ? 'Ascending' : 'Descending'} </Text>
+                {showDescending ? (
+                  <HiChevronUp fontSize='23px' />
+                ) : (
+                  <HiChevronDown fontSize='23px' />
+                )}
               </Box>
-            )}
+              {showDescending && sortingOrder === 'ascending' && (
+                <Box 
+                  marginTop='2px' 
+                  position='absolute' 
+                  onClick={handleDescendingClick}
+                  cursor="pointer"
+                >
+                  <Text fontSize='13px'>    
+                    {sortingOrder === 'ascending' ? 'Descending' : 'Ascending'}
+                  </Text>
+                </Box>
+              )} */}
+
+            <Menu>
+                <MenuButton
+                  borderRadius='10px'
+                  backgroundColor='rgb(231, 244, 255)'
+                  fontSize='13px'
+                  as={Button}
+                  rightIcon={<HiChevronDown fontSize='23px' color='gray' />}
+                  fontWeight='400'
+                  textAlign="start"
+                  color='black'
+                  _hover={{
+                    backgroundColor: 'transparent' 
+                  }}
+                  _active={{
+                    backgroundColor: 'transparent' // Change to your desired active color
+                  }}
+                >
+                  {sortingOrder === 'ascending' ? 'Ascending' : 'Descending'}
+                </MenuButton>
+            <MenuList>
+            
+            <MenuItem onClick={handleDescendingClick}>
+              {sortingOrder === 'ascending' ? 'Descending' : 'Ascending'}
+            </MenuItem>
+            </MenuList>
+          </Menu>
           </Box>
           <Box flexDirection='row' display='flex'>
             <InputGroup>
@@ -280,13 +426,14 @@ export const Content = () => {
                 to
               </InputLeftAddon>
               <Input
-                type='text'
-                width='60px'
-                paddingRight='20px'
-                textAlign='right'
-                borderRadius='10px'
-                borderWidth='1.9px'
-                borderColor='gray.400'
+                 type='text'
+                 width='60px'
+                 paddingRight='10px'
+                 textAlign='right'
+                 borderRadius='10px'
+                 borderWidth='1.9px'
+                 borderColor='gray.400'
+                 maxlength='3'
               />
             </InputGroup>
           </Box>
@@ -376,7 +523,12 @@ export const Content = () => {
               Ability
             </MenuButton>
             <MenuList>
-              <MenuItem>Download</MenuItem>
+            {pokemonAbilities.map(ability => (
+              <MenuItem key={ability} onClick={() => handleAbilitySelect(ability)}>
+                {ability.charAt(0).toUpperCase() + ability.slice(1)}
+              </MenuItem>
+            ))}
+
             </MenuList>
           </Menu>
 
@@ -440,6 +592,7 @@ export const Content = () => {
             <IoMdRefresh fontSize='25px' padding='20px' color='white' />
           </Button>
         </Box>
+              
        
           {pokemonData && (
             <>
@@ -450,14 +603,16 @@ export const Content = () => {
                 flexWrap='wrap'
                 justifyContent='space-between'
               >
-              {visibleItemPokemon ? (
-                visibleItemPokemon.map(pokemon => (
+             {sortingOrder === 'descending'? visibleItemPokemon
+                    .slice()
+                    .reverse()
+                    .map((pokemon) => (
                   <Box
                     onClick={() => handlePokemonClick(pokemon)}
                     key={pokemon.id}
                     width='31%'
                     marginBottom='25px'
-                  >
+                    >
                     <Box
                       backgroundColor='white'
                       borderRadius='20px'
@@ -520,9 +675,10 @@ export const Content = () => {
                       </Box>
                     </Box>
                   </Box>
-                ))
+                )
                 ) : (
-                  visiblePokemon.map(pokemon => (
+                  visiblePokemon
+                  .map(pokemon => (
                     <Box
                     onClick={() => handlePokemonClick(pokemon)}
                     key={pokemon.id}
@@ -966,5 +1122,6 @@ export const Content = () => {
         )}
       </Box>
     </Grid>
+    </>
   )
 }

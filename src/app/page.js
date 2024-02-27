@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <ChakraProvider>
       <main className={styles.main}>
-        <Nav/>
+        {/* <Nav/> */}
         <Content/>
       </main>
     </ChakraProvider>
